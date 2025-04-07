@@ -3,7 +3,7 @@
 --Conect TO:
 --Server Name: (localdb)\mssqllocaldb
 -- Authentification 2 tüüpi:
-1. Windows Auth
+1. Windows Auth - (localdb) admini õigused
 
 -----------------------------
 CREATE DATABASE logunovLogitp23;
