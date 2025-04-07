@@ -1,0 +1,24 @@
+--komentaar
+--SQL SERVER Managment Stuudio
+--Conect TO:
+--Server Name: (localdb)\mssqllocaldb
+-- Authentification 2 tüüpi:
+1. Windows Auth
+
+-----------------------------
+CREATE DATABASE logunovLogitp23;
+USE logunovLogitp23;
+
+--taabeli loomine
+--identity(1,1) - ise täidab tabeli 1,2,3...
+CREATE TABLE inimene(
+inimeneID int Primary Key identity(1,1),
+nimi varchar(50) unique, 
+sunniaeg date,
+telefon char(12),
+pikkus decimal(5,2),
+opilasekodu bit
+);
+SELECT * FROM inimenee;
+--tabeli kustutamine
+DROP table inimenee;
