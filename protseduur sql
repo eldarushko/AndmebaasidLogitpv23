@@ -1,0 +1,31 @@
+CREATE DATABASE proceduurLogunov;
+USE proceduurLogunov;
+
+CREATE TABLE filmid(
+filmID int primary key identity(1,1),
+filmNimi varchar(30) unique,
+filmPikkus int,
+rezisoor varchar(30)
+);
+SELECT * FROM filmid;
+
+INSERT INTO filmid(filmNimi, filmPikkus, rezisoor)
+VALUES ('Minecraft', 120, 'Jared Hess');
+
+--protseduur mis lisab uus film ja kohe näitab tabelis (INSERT, SELECT)
+CREATE PROCEDURE lisaFilm
+@nimi varchar(30),
+@pikkus int,
+@rezisoor varchar(30)
+AS
+BEGIN
+INSERT INTO filmid(filmNimi, filmPikkus, rezisoor)
+VALUES (@nimi, @pikkus, @rezisoor);
+SELECT * FROM filmid;
+END;
+
+--kutse
+EXEC lisaFilm 'Bob ja Bobek', 120, 'testtest';
+
+--et procedure eemalda
+DROP PROCEDURE lisaFilm;
