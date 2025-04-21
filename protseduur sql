@@ -29,3 +29,77 @@ EXEC lisaFilm 'Bob ja Bobek', 120, 'testtest';
 
 --et procedure eemalda
 DROP PROCEDURE lisaFilm;
+---------------------------------------------------
+CREATE DATABASE logunov;
+USE logunov;
+
+--tabeli loomine
+CREATE TABLE filmid(
+FilmID int primary key identity(1,1),
+FilmNimi varchar(30) unique,
+Pikkus int,
+FilmiAutor varchar(30)
+);
+
+SELECT * FROM filmid;
+
+INSERT INTO filmid(FilmNimi, Pikkus, FilmiAutor)
+VALUES ('Mickey', 137, 'Pon Jun Ho');
+
+CREATE PROCEDURE lisaFilm
+@nimi varchar(30),
+@pikkus int,
+@autor varchar(30)
+AS
+BEGIN
+SELECT * FROM filmid;
+INSERT INTO filmid(FilmNimi, Pikkus, FilmiAutor)
+VALUES (@nimi, @pikkus, @autor);
+SELECT * FROM filmid;
+END;
+
+EXEC lisaFilm 'The Godfather', 175, 'Francis Ford Kollola';
+
+DROP PROCEDURE lisaFilm;
+
+CREATE PROCEDURE eemaldaFilm
+@id int
+AS
+BEGIN
+SELECT * FROM filmid;
+DELETE FROM filmid
+WHERE FilmID = @id;
+SELECT * FROM filmid;
+END
+
+EXEC eemaldaFilm 7;
+DROP PROCEDURE eemaldaFilm
+
+CREATE PROCEDURE muutaPikkus
+@id int,
+@pikkus int
+AS
+BEGIN
+SELECT * FROM filmid;
+UPDATE filmid
+SET Pikkus = @pikkus
+WHERE FilmID = @id;
+SELECT * FROM filmid;
+END
+
+EXEC muutaPikkus 2,100;
+DROP PROCEDURE muutaPikkus;
+
+CREATE PROCEDURE muutaNimi
+@id int,
+@nimi varchar(30)
+AS
+BEGIN
+SELECT * FROM filmid;
+UPDATE filmid
+SET FilmNimi = @nimi
+WHERE FilmID = @id;
+SELECT * FROM filmid;
+END
+
+EXEC muutaNimi 1,'Mickey 17'
