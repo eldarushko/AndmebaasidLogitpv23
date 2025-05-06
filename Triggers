@@ -1,0 +1,75 @@
+--Trigerid
+--SQL triger -protsess, mille abil tema sisse
+-- kirjutatud tegevused automaatselt käivitakse.
+
+--INSERT UPDATE DELETE trigerid mis jälgivad antud tegevused tabelites
+-- ja kirjutavad logi tabeli mida nad jälgisid
+use logunov;
+create table toode(
+toodeID int primary key identity(1,1),
+toodeNimetus varchar(25),
+toodeHind decimal(5,2));
+--tabel logi, mis täidab triger
+create table logi(
+id int primary key identity(1,1),
+tegevus varchar(25),
+kuupaev datetime,
+andmed text);
+
+--INSERT triger, mis jälgib andmete lisamine toode tabelisse
+create trigger toodeLisamine
+ON toode
+for INSERT
+AS
+INSERT INTO logi(tegevus, kuupaev, andmed)
+SELECT 'toode on lisatud',
+GETDATE(),
+inserted.toodeNimetus
+FROM inserted;
+
+DROP trigger toodeLisamine;
+
+--kontroll 
+INSERT INTO toode(toodeNimetus, toodeHind)
+VALues('Sprite', 2.10);
+
+SELECT * FROM toode;
+SELECT * FROM logi;
+
+--DELETE TRIGER, mis jälgib toode kustutamine tabelis
+
+create trigger toodeKustutamine
+on toode
+for DELETE
+AS
+INSERT INTO logi(tegevus, kuupaev, andmed)
+SELECT 'toode on kustutatud',
+GETDATE(),
+CONCAT(deleted.toodeNimetus, ' | tegi kasutaja ', SYSTEM_USER) 
+FROM deleted;
+--kontroll
+DELETE FROM toode
+WHERE toodeID=1;
+SELECT * FROM toode;
+SELECT * FROM logi;
+
+--Update triger, mis jälgib toode uuendamine tabelis
+
+create trigger toodeUuendamine
+on toode
+for UPDATE
+AS
+INSERT INTO logi(tegevus, kuupaev, andmed)
+SELECT 'toode on uuendatud',
+GETDATE(),
+CONCAT('Vanad andmed - ', deleted.toodeNimetus,', ' ,deleted.toodeHind,
+'\nUued andmed - ', inserted.toodeNimetus,', ',inserted.toodeHind,
+'| tegi kasutaja ', SYSTEM_USER) 
+FROM deleted INNER JOIN inserted
+ON deleted.toodeID=inserted.toodeID;
+
+--kontroll
+UPDATE toode set toodeHind=4.00
+WHERE toodeNimetus='Sprite'
+SELECT * FROM toode;
+SELECT * FROM logi;
