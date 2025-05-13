@@ -1,0 +1,77 @@
+create table firma(
+firmaID int not null primary key identity(1,1),
+firmanimi varchar(20) unique,
+aadress varchar(20),
+telefon int
+);
+select * from firma;
+
+INSERT INTO firma(firmanimi, aadress, telefon) VALUES 
+('Circle K', 'Suur-Sõjamäe 10', '6728300'),
+('Bolt', 'Sõjamäe 10', '6323400'),
+('Wolt', 'Suur 10', '4343300'),
+('Fudy', 'Suur-Sõjamäe 10', '665300'),
+('Kalma Saun', 'Suur-Sõjamäe 10', '6455283');
+
+create table Praktikajuhendaja(
+praktikajuhendajaID int not null primary key identity(1,1),
+eesnimi varchar(20),
+perekonnanimi varchar(20),
+sunniaeg int,
+telefon varchar(20)
+);
+
+INSERT INTO Praktikajuhendaja(eesnimi, perekonnanimi, sunniaeg, telefon) VALUES 
+('Valeri', 'Tamm', '2004', '6728300'),
+('Dmitri', 'Kozlov', '2001', '5454300'),
+('Pavel', 'Pavlov', '2006', '5728300'),
+('Semen', 'Sibul', '1999', '6422300'),
+('Valeria', 'Õun', '1980', '6422810');
+
+select * from Praktikajuhendaja;
+
+create table praktikabaas(
+praktikabaasID int not null primary key identity(1,1),
+firmaID int,
+praktikatingimused varchar(20),
+arvutiprogramm varchar(20),
+juhendajaID int,
+foreign key (firmaID) references firma(firmaID),
+foreign key (juhendajaID) references praktikajuhendaja(praktikajuhendajaID)
+);
+
+INSERT INTO praktikabaas(firmaID, praktikatingimused, arvutiprogramm, juhendajaID) VALUES 
+(1, 'Kontrolltöö', 'Excel', 1),
+(2, 'Planeerimine', 'Project', 2),
+(3, 'Faili vaatamine', 'Winrar', 3),
+(4, 'Marketing', 'Photoshop', 4),
+(5, 'Töötamine', 'Libre Office', 5);
+
+select * from praktikabaas;
+--1. Koosta tabel Praktikabaas_logi (id, kasutaja, aeg, tegevus, andmed).
+
+create table Praktikabaas_logi(
+id int not null primary key identity(1,1),
+kasutaja varchar(20),
+aeg int,
+tegevus varchar(20),
+andmed varchar(20)
+);
+
+CREATE TRIGGER trg_Check_Juhendaja_Synniaeg
+ON Praktikajuhendaja
+INSTEAD OF INSERT
+AS
+BEGIN
+IF EXISTS (SELECT 1 FROM inserted WHERE sunniaeg > GETDATE())
+BEGIN
+RAISERROR('Sünniaeg ei tohi olla tulevikus.', 16, 1);
+END
+ELSE
+BEGIN
+INSERT INTO praktikajuhendaja (eesnimi, perekonnanimi, sunniaeg, telefon)
+SELECT eesnimi, perekonnanimi, sunniaeg, telefon
+FROM inserted;
+END
+END;
+
