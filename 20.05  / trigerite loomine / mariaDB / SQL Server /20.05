@@ -23,34 +23,37 @@ values ('dssvds', '678gs51');
 insert into kasutajad (loginn, parool)
 values ('vvvcs0', 'tkjhd34');
 insert into kasutajad (loginn, parool)
-values ('test', 'test');
+values ('test3', 'test3');
 
-select * from kasutajad;
+select * from logi;
 
 create table logi(
-    change_id INT IDENTITY PRIMARY KEY,
-    id INT NOT NULL,
-    loginn VARCHAR(255) NOT NULL, 
-    parool varchar(50) NOT NULL,
-    updated_at DATETIME NOT NULL,
-    operation CHAR(3) NOT NULL,
-    CHECK(operation = 'INS' or operation='DEL' or operation='UPD'));
+id INT IDENTITY PRIMARY KEY,
+tegevus VARCHAR(25) not null,
+andmed varchar(255)not null,
+kasutaja sysname not null,
+aeg datetime not null
+);
 
-drop table logi;
-
+drop trigger trg_update_kasutajad;
+-----------------------------------------------------------------
 --1triger
 CREATE TRIGGER trg_insert_kasutajad
 ON kasutajad
 AFTER INSERT
 AS
 BEGIN
-    SET NOCOUNT ON;
+SET NOCOUNT ON;
 
-    INSERT INTO logi (id, loginn, parool, updated_at, operation)
-    SELECT
-        id, loginn, parool, GETDATE(), 'INS'
-    FROM inserted;
+INSERT INTO logi (tegevus, andmed, kasutaja, aeg)
+SELECT
+'INS, kasutajad',
+CONCAT('Uued andmed - ', i.id, ', ', i.loginn, ', ', i.parool),
+SYSTEM_USER,
+GETDATE()
+FROM inserted i;
 END;
+
 
 --2triger
 CREATE TRIGGER trg_delete_kasutajad
@@ -58,12 +61,15 @@ ON kasutajad
 AFTER DELETE
 AS
 BEGIN
-    SET NOCOUNT ON;
+SET NOCOUNT ON;
 
-    INSERT INTO logi (id, loginn, parool, updated_at, operation)
-    SELECT
-        id, loginn, parool, GETDATE(), 'DEL'
-    FROM deleted;
+INSERT INTO logi (tegevus, andmed, kasutaja, aeg)
+SELECT
+'DEL, kasutajad',
+CONCAT('Kustutatud andmed - ', d.id, ', ', d.loginn, ', ', d.parool),
+SYSTEM_USER,
+GETDATE()
+FROM deleted d;
 END;
 
 --3triger
@@ -72,22 +78,30 @@ ON kasutajad
 AFTER UPDATE
 AS
 BEGIN
-    SET NOCOUNT ON;
+SET NOCOUNT ON;
 
-    INSERT INTO logi (id, loginn, parool, updated_at, operation)
-    SELECT i.id, i.loginn, i.parool, GETDATE(), 'UPD'
-    FROM inserted i
-    JOIN deleted d ON i.id = d.id
-    WHERE i.loginn <> d.loginn OR i.parool <> d.parool;
+INSERT INTO logi (tegevus, andmed, kasutaja, aeg)
+SELECT
+'UPD, kasutajad',
+CONCAT(
+'Vanad andmed - ', d.id, ', ', d.loginn, ', ', d.parool,
+' | Uued andmed - ', i.id, ', ', i.loginn, ', ', i.parool),
+SYSTEM_USER,
+GETDATE()
+FROM inserted i
+INNER JOIN deleted d ON i.id = d.id
+WHERE
+i.loginn <> d.loginn OR i.parool <> d.parool;
 END;
 
-
+------------------------------------------------------
+select * from logi;
 UPDATE kasutajad
-SET parool = 'test1'
-WHERE id = 7; 
+SET parool = 'test4'
+WHERE id = 2; 
 
 DELETE FROM kasutajad
-WHERE id = 7;
+WHERE id = 2;
 
 select * from logi;
 select * from kasutajad;
@@ -108,90 +122,82 @@ insert into Õigused (muuda, kustutada, Lisa, ID) values ('jah', 'jah', 'ei', 6)
 insert into Õigused (muuda, kustutada, Lisa, ID) values ('jah', 'jah', 'ei', 7);
 insert into Õigused (muuda, kustutada, Lisa, ID) values ('jah', 'jah', 'ei', 8);
 insert into Õigused (muuda, kustutada, Lisa, ID) values ('jah', 'jah', 'ei', 9);
-insert into Õigused (muuda, kustutada, Lisa, ID) values ('jah', 'jah', 'ei', 10);
+insert into Õigused (muuda, kustutada, Lisa, ID) values ('jah', 'jah', 'ei', 110);
 
-create table logi2(
-    change_id INT IDENTITY PRIMARY KEY,
-    muuda varchar(12) NOT NULL,
-    kustutada VARCHAR(12) NOT NULL, 
-    Lisa varchar(12) NOT NULL,
-	ID int not null,
-    updated_at DATETIME NOT NULL,
-    operation CHAR(3) NOT NULL,
-    CHECK(operation = 'INS' or operation='DEL' or operation='UPD'));
-
+--concat('Vanad andmed -', deleted.muuda,', ' ,deleted.kustutada, ', ' ,deleted.Lisa,', ' ,deleted.ID,
+--'\Uued andmed - ' ,inserted.muuda, ', ' ,inserted.kustutada, ', ' ,inserted.Lisa, ', ' ,inserted.ID),
 --1triger
-
-CREATE TRIGGER trg_insert_Õigused
+CREATE TRIGGER trg_insert_oigused
 ON Õigused
 AFTER INSERT
 AS
 BEGIN
-    SET NOCOUNT ON;
+SET NOCOUNT ON;
 
-    INSERT INTO logi2 (muuda, kustutada, Lisa, ID, updated_at, operation)
-    SELECT
-        muuda,
-        kustutada,
-        Lisa,
-        ID,
-        GETDATE(),
-        'INS'
-    FROM inserted;
+INSERT INTO logi (tegevus, andmed, kasutaja, aeg)
+SELECT
+'INS, Õigused',
+CONCAT('Uued andmed - ',i.muuda, ', ',i.kustutada, ', ',i.Lisa, ', ',i.ID),
+SYSTEM_USER,
+GETDATE()
+FROM inserted i;
 END;
+drop trigger trg_delete_oigused;
 
+select * from logi;
 --2triger
 
-CREATE TRIGGER trg_delete_Õigused
+CREATE TRIGGER trg_delete_oigused
 ON Õigused
 AFTER DELETE
 AS
 BEGIN
-    SET NOCOUNT ON;
+SET NOCOUNT ON;
 
-    INSERT INTO logi2 (muuda, kustutada, Lisa, ID, updated_at, operation)
-    SELECT
-        muuda,
-        kustutada,
-        Lisa,
-        ID,
-        GETDATE(),
-        'DEL'
-    FROM deleted;
+INSERT INTO logi (tegevus, andmed, kasutaja, aeg)
+SELECT
+'DEL, Õigused',
+CONCAT('Kustutatud andmed - ', d.muuda, ', ', d.kustutada, ', ', d.Lisa, ', ', d.ID),
+SYSTEM_USER,
+GETDATE()
+FROM deleted d;
 END;
 
 --3triger
-
-CREATE TRIGGER trg_update_Õigused
+CREATE TRIGGER trg_update_oigused
 ON Õigused
 AFTER UPDATE
 AS
 BEGIN
-    SET NOCOUNT ON;
+SET NOCOUNT ON;
 
-    INSERT INTO logi2 (muuda, kustutada, Lisa, ID, updated_at, operation)
-    SELECT
-        i.muuda, i.kustutada, i.Lisa, i.ID, GETDATE(), 'UPD'
-    FROM inserted i
-    JOIN deleted d ON i.ID = d.ID
-    WHERE i.muuda <> d.muuda OR i.kustutada <> d.kustutada OR i.Lisa <> d.Lisa;
+INSERT INTO logi (tegevus, andmed, kasutaja, aeg)
+SELECT
+'UPD, Õigused',
+CONCAT('Vanad andmed - ', d.muuda, ', ', d.kustutada, ', ', d.Lisa, ', ', d.ID,' | Uued andmed - ', i.muuda, ', ', i.kustutada, ', ', i.Lisa, ', ', i.ID),
+SYSTEM_USER,
+GETDATE()
+FROM inserted i
+INNER JOIN deleted d ON i.ID = d.ID
+WHERE
+i.muuda <> d.muuda OR i.kustutada <> d.kustutada OR i.Lisa <> d.Lisa;
 END;
+-----------------------------------------------------------------------
 
-select * from logi2;
+select * from logi;
 
 INSERT INTO Õigused (muuda, kustutada, Lisa, ID)
 VALUES ('ei', 'ei', 'jah', 100);
 
 UPDATE Õigused
 SET kustutada = 'ei'
-WHERE ID = 7;
+WHERE ID = 5;
 
 
 DELETE FROM Õigused
 WHERE ID = 100;
 
-select * from logi2;
 select * from logi;
--- создать пользователя student и паролем 12345, который не сможет видеть таблицы и не сможет создавать новые таблицы (CREATE TABLE)
-DENY CREATE TABLE TO student;
-DENY SELECT to student;
+--создать пользователя opilane и паролем 12345, который не сможет видеть таблицы и не сможет создавать новые таблицы (CREATE TABLE)
+DENY CREATE TABLE TO opilane;
+DENY SELECT to opilane;
